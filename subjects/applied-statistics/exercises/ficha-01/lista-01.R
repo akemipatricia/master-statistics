@@ -10,24 +10,57 @@ library(pwr)
 
 
 # ------------------------------------------------------------
+# Funções
+# ------------------------------------------------------------
+plot_dist_t <- function(n = 4, mean_sample = 9, dp_sample = 0.6, alpha = 0.05) {
+  
+  # Valor crítico da distribuição t
+  qq <- qt(1 - alpha/2, n - 1)
+  
+  # Gerando o vetor aleatório (caso queira usá-lo posteriormente no script)
+  lista_de_vetores <- rnorm(n, mean = mean_sample, sd = dp_sample)
+  
+  # Limite estendido para o gráfico não cortar as bordas
+  limite_grafico <- qq + 1
+  
+  # 1. Desenha a curva teórica
+  curve(dt(x, df = n - 1), from = -limite_grafico, to = limite_grafico, 
+        ylab = "densidade", xlab = "t", col = "blue", lwd = 2)
+  
+  # 2. Pinta a extremidade esquerda (de -limite_grafico até -qq)
+  x_esq <- seq(-limite_grafico, -qq, length = 100)
+  y_esq <- dt(x_esq, df = n - 1)
+  polygon(c(-limite_grafico, x_esq, -qq), c(0, y_esq, 0), col = rgb(1, 0, 0, 0.3), border = NA)
+  
+  # 3. Pinta a extremidade direita (de qq até limite_grafico)
+  x_dir <- seq(qq, limite_grafico, length = 100)
+  y_dir <- dt(x_dir, df = n - 1)
+  polygon(c(qq, x_dir, limite_grafico), c(0, y_dir, 0), col = rgb(1, 0, 0, 0.3), border = NA)
+  
+  # 4. Adiciona as linhas tracejadas verticais nos valores críticos
+  abline(v = c(-qq, qq), lty = 2, col = "red", lwd = 1.5)
+  
+  # Opcional: Retorna a lista de vetores gerada invisivelmente caso precise dela
+  return(invisible(lista_de_vetores))
+}
+
+
+# ------------------------------------------------------------
 # Exercício 1
 # ------------------------------------------------------------
 # Peso da glândula pituitária em 4 ratinhos: média = 9.0 mg, desvio padrão = 0.6 mg
 # IC a 95% para a média populacional
 
-alpha <- 0.05
-n <- 4
-mean.peso <- 9.0
-sd.peso <- 0.6
+n = 4
+mean_sample = 9
+dp_sample = 0.6
+alpha = 0.05
+se = dp_sample/sqrt(n)
 
-IC.low  <- mean.peso - sd.peso / sqrt(n) * qt(1 - alpha / 2, df = n - 1)
-IC.high <- mean.peso + sd.peso / sqrt(n) * qt(1 - alpha / 2, df = n - 1)
 
-cat("IC a 95% para o peso médio da glândula pituitária: [", IC.low, ",", IC.high, "]\n")
+plot_dist_t(n = n, mean_sample = mean_sample, dp_sample = dp_sample, alpha = alpha) 
 
-# Hipótese necessária para a validade do IC: a população (peso da glândula)
-# segue uma distribuição Normal, já que n = 4 é muito pequeno e não é
-# possível invocar o Teorema do Limite Central.
+mean_sample + c(-1,1)*qt(1-alpha/2,n-1)*se
 
 
 # ------------------------------------------------------------
@@ -36,33 +69,26 @@ cat("IC a 95% para o peso médio da glândula pituitária: [", IC.low, ",", IC.h
 # Consumo de oxigénio (ml) em 30 suspensões celulares
 # H0: mu = 12   vs   H1: mu != 12   (alpha = 0.05)
 
-dados2 <- c(14.2, 13.8, 14.2, 14.4, 11.5, 16.0, 14.9, 15.3, 13.8, 14.8,
+x <- c(14.2, 13.8, 14.2, 14.4, 11.5, 16.0, 14.9, 15.3, 13.8, 14.8,
             13.2, 14.4, 12.6, 14.1, 13.1, 11.7, 14.8, 14.1, 13.1, 13.6,
             14.1, 14.8, 11.7, 12.4, 12.6, 11.0, 13.2, 14.6, 12.7, 14.8)
 
-# Conferência dos somatórios dados no enunciado
-sum(dados2)      # deve dar 409.5
-sum(dados2^2)    # deve dar 5632.99
+n = length(x)
+mu = 12
+mean_sample = mean(x)
+sd_sample2 = (sum(x^2)-n*(mean_sample^2))/(n-1)
+alpha = 0.05
+qt(1-alpha/2,n-1)
 
-# Avaliação gráfica de normalidade
-hist(dados2, freq = FALSE, ylim = range(0, 0.4),
-     main = "Histograma do consumo de oxigénio", xlab = "ml")
-curve(dnorm(x, mean(dados2), sd(dados2)), add = TRUE, col = "blue", lwd = 2)
+plot_dist_t(n = n, mean_sample = mean_sample, dp_sample = sd_sample, alpha = alpha) 
 
-qqnorm(dados2)
-qqline(dados2, col = "red")
+t = (mean_sample-mu)/(sqrt(sd_sample2/n))
+ic = mean_sample + c(-1,1)*qt(1-alpha/2,n-1)*(sqrt(sd_sample2/n))
 
-# Proporção de observações dentro de média +/- 2*sd (esperado ~95% se Normal)
-L <- mean(dados2) - 2 * sd(dados2)
-U <- mean(dados2) + 2 * sd(dados2)
-length(dados2[dados2 >= L & dados2 <= U]) / length(dados2)
+qqnorm(x)
+qqline(x)
 
-# Teste t para uma amostra
-teste2 <- t.test(dados2, mu = 12, alternative = "two.sided", conf.level = 0.95)
-teste2
-# t = 7.395, df = 29, p-value ~ 3.79e-08 (<< 0.05) -> Rejeita-se H0.
-# Conclusão: há evidência suficiente para concluir que o consumo médio de
-# oxigénio das células é diferente de 12 ml.
+(t.test(x, mu = 12, alternative = "two.sided", conf.level = 0.95))
 
 
 # ------------------------------------------------------------
@@ -74,6 +100,28 @@ teste2
 
 dados3 <- c(271, 198, 219, 225, 253, 262, 224, 291, 264, 211, 268, 243,
             230, 275, 284, 282, 216, 288, 253, 236, 295, 252, 272, 294)
+
+n = length(dados3)
+mean_sample = mean(dados3)
+mu = 250
+sd_sample2 = (sum(dados3^2)-n*(mean_sample^2))/(n-1)
+alpha = 0.05
+qt(1-alpha,n-1)
+
+plot_dist_t(n = n, mean_sample = mean_sample, dp_sample = sd_sample2, alpha = alpha) 
+
+t = (mean_sample-mu)/sqrt(sd_sample2/n)
+ic = mean_sample + c(-1,1)*qt(1-alpha/2,n-1)*sqrt(sd_sample2/n)
+
+(t.test(dados3, mu = mu, alternative = "greater", conf.level = 0.95))
+
+abline(v = c(-t, t), lty = 2, col = "red", lwd = 1.5)
+
+---
+
+
+
+
 
 sum(dados3)      # 6106
 sum(dados3^2)    # 1572790
