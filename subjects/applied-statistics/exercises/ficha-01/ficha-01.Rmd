@@ -3,7 +3,7 @@ title: "Ficha 01 - Estatística Aplicada"
 subtitle: "Revisão de Inferência Estatística"
 author: "Patricia Akemi"
 date: "`r Sys.Date()`"
-output: html_document
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
