@@ -120,18 +120,10 @@ abline(v = c(-t, t), lty = 2, col = "red", lwd = 1.5)
 ---
 
 
+install.packages("pwr") # apenas uma vez
+library(pwr)
 
 
-
-sum(dados3)      # 6106
-sum(dados3^2)    # 1572790
-
-hist(dados3, freq = FALSE, main = "Tempo de vida das bactérias", xlab = "horas")
-curve(dnorm(x, mean(dados3), sd(dados3)), add = TRUE, col = "blue", lwd = 2)
-qqnorm(dados3); qqline(dados3, col = "red")
-
-teste3 <- t.test(dados3, mu = 250, alternative = "greater", conf.level = 0.95)
-teste3
 # t = 0.7465, df = 23, p-value = 0.2315 (> 0.05) -> Não se rejeita H0.
 # (No SPSS, como o teste lá é sempre bilateral, dividir o p-value por 2.)
 # Conclusão: os dados não fornecem evidência suficiente para confirmar a
@@ -152,24 +144,18 @@ pwr.t.test(n = length(dados3), d = d3, sig.level = 0.05,
 # Apenas estatísticas-resumo disponíveis (sem dados brutos) -> cálculo "à mão" em R
 # H0: mu = 7725   vs   H1: mu != 7725   (alpha = 0.01)
 
-n4     <- 242
-mean4  <- 6992.6
-sd4    <- 1176.83
-mu0_4  <- 7725
-alpha4 <- 0.01
+n = 242
+mean = 6992.6
+sd = 1176.83
+alph = 0.01
+mu = 7725
 
-se4 <- sd4 / sqrt(n4)
-z4  <- (mean4 - mu0_4) / se4
-p4  <- 2 * (1 - pnorm(abs(z4)))
+qt(1-alpha/2,n-1) # 1.969856
 
-cat("z =", z4, " | p-value =", p4, "\n")
+plot_dist_t(n = n, mean_sample = mean, dp_sample = sd, alpha = alpha) 
 
-IC4.low  <- mean4 - qnorm(1 - alpha4 / 2) * se4
-IC4.high <- mean4 + qnorm(1 - alpha4 / 2) * se4
-cat("IC a 99% para o consumo médio: [", IC4.low, ",", IC4.high, "]\n")
-# z ~ -9.68, p-value ~ 0 (< 0.01) -> Rejeita-se H0.
-# O valor de referência (7725 kJ) fica fora do IC a 99%, confirmando que o
-# consumo médio diário é significativamente diferente do recomendado.
+t = (mean-mu)/(sd/sqrt(n))
+ic = mean + c(-1,1)*qt(1-alpha/2,n-1)*sd/sqrt(n)
 
 
 # ------------------------------------------------------------
@@ -180,26 +166,28 @@ cat("IC a 99% para o consumo médio: [", IC4.low, ",", IC4.high, "]\n")
 dados5 <- c(162, 177, 151, 167, 141, 153, 143, 157, 123, 161, 147, 157, 141,
             157, 151, 134, 134, 128, 151, 112, 142, 121, 130, 134, 120)
 
-# (a) Análise gráfica de simetria
-hist(dados5, main = "Pressão arterial sistólica", xlab = "mmHg")
-boxplot(dados5, main = "Boxplot da pressão arterial sistólica", horizontal = TRUE)
-qqnorm(dados5); qqline(dados5, col = "red")
-# O histograma, o boxplot e o Q-Q plot permitem avaliar visualmente se a
-# distribuição é razoavelmente simétrica.
+n = length(dados5)
+mean_a = mean(dados5)
+sd2 = (sum(x^2)+n*(mean_a^2))/(n-1)
+alpha = 0.05
 
-# (b) Descrição numérica
-summary(dados5)     # mínimo, quartis, mediana, máximo
-mean(dados5)
-sd(dados5)
-var(dados5)
-IQR(dados5)          # Q3 - Q1
-# Média amostral = 143.76 mmHg -> superior a 140 mmHg.
+# a
+hist(dados5)
+qqline(dados5)
+qqnorm(dados5)
 
-# (c) Teste de hipóteses: H0: mu <= 140   vs   H1: mu > 140   (alpha = 0.01)
-teste5 <- t.test(dados5, mu = 140, alternative = "greater", conf.level = 0.99)
-teste5
-# t = 1.1587, df = 24, p-value = 0.129 (> 0.01) -> Não se rejeita H0.
-# IC a 99% (unilateral): [135.67, +Inf[ -> contém 140, confirmando a não rejeição.
+# b
+
+## nao rejeita Ho
+
+# c
+mu = 140
+t = (mean_a-mu)/(sd2/sqrt(n))
+qt(1-alpha/2,n-1)
+plot_dist_t(n = n, mean_sample = mean, dp_sample = sd, alpha = alpha) 
+abline(v = c(-t, t), lty = 2, col = "red", lwd = 1.5)
+
+(t.test(dados5, mu = mu, alternative = "greater", conf.level = 0.99))
 
 # Como não se rejeitou H0 -> análise de potência
 d5 <- (mean(dados5) - 140) / sd(dados5)
@@ -210,3 +198,128 @@ pwr.t.test(n = length(dados5), d = d5, sig.level = 0.01,
 t.obs5   <- (mean(dados5) - 140) / (sd(dados5) / sqrt(length(dados5)))
 p.valor5 <- 1 - pt(t.obs5, df = length(dados5) - 1)
 cat("t =", t.obs5, " | valor-p =", p.valor5, "\n")
+
+
+# ------------------------------------------------------------
+# Exercício 6
+# ------------------------------------------------------------
+n = 3918
+mean_a = 0.9
+sd_a = 0.96
+alpha = 0.05
+mu = 1
+qt(1-alpha/2,n-1)
+
+t = (mean_a-mu)/(sd_a/sqrt(n))
+ic = mean_a + c(-1,1)*qt(1-alpha/2,n-1)*(sd_a/sqrt(n))
+
+2*pt(t,n-1)
+
+# ------------------------------------------------------------
+# Exercício 7
+# ------------------------------------------------------------
+
+n = 49 
+mean_a = 21
+sd_a = 11
+alpha = 0.95
+
+# a
+t = (mean_a - 30)/(sd_a/sqrt(n))
+qt(1-alpha/2,n-1)
+
+# b
+pt(t,n-1)
+
+# ------------------------------------------------------------
+# Exercício 8 --- NAO CONSEGUI FAZER NA MAO
+# ------------------------------------------------------------
+
+n = 24
+dados8 = c(63, 68, 79, 65, 64, 63, 65, 44, 76, 74, 66, 46, 67, 73, 69, 76, 75, 78, 88, 42, 64, 41, 65, 65)
+length(dados8)
+mean_a = mean(dados8)
+sd2 = (sum(dados8^2)+n*(mean_a^2))/(n-1)
+
+mu = 70
+t = (mean_a - mu)/(sd2/sqrt(n))
+
+(t.test(dados8, mu = mu, alternative = "less", conf.level = 0.95))
+
+
+# ------------------------------------------------------------
+# Exercício 9
+# ------------------------------------------------------------
+
+dadosa = c(56, 67, 42, 48, 55, 61, 52, 39, 47, 58, 50, 40, 59, 62, 44, 57)
+dadosb = c(78, 34, 37, 72, 58, 68, 27, 55, 65, 40, 75, 33, 66)
+
+na = length(dadosa)
+nb = length(dadosb)
+
+mean_a = mean(dadosa)
+mean_b = mean(dadosb)
+
+sda = (sum(dadosa^2)+na*(mean_a))/(na-1)
+sdb = (sum(dadosb^2)+nb*(mean_b))/(nb-1)
+
+# variancias iguais 
+t.test(dadosa, dadosb, var.equal = TRUE) # p-value = 0.6736
+
+# variancias diferentes
+t.test(dadosa, dadosb, var.equal = FALSE) # p-value = 0.6962
+
+
+# ------------------------------------------------------------
+# Exercício 10
+# ------------------------------------------------------------
+
+# a: sindrome Down -- b: sem
+na = 12
+nb = 15
+
+mean_a = 4.5
+mean_b = 3.4
+
+sda = 1
+sdb = 1.225
+
+sp <- sqrt(((na-1)*sda^2 + (nb-1)*sdb^2)/(na+nb-2))
+t <- (mean_a-mean_b)/(sp*sqrt(1/na + 1/nb))
+gl <- na+nb-2
+
+2 * pt(-abs(t), df = gl)
+
+# ------------------------------------------------------------
+# Exercício 11
+# ------------------------------------------------------------
+
+
+
+# ------------------------------------------------------------
+# Exercício 12
+# ------------------------------------------------------------
+# ------------------------------------------------------------
+# Exercício 13
+# ------------------------------------------------------------
+# ------------------------------------------------------------
+# Exercício 14
+# ------------------------------------------------------------
+# ------------------------------------------------------------
+# Exercício 15
+# ------------------------------------------------------------
+# ------------------------------------------------------------
+# Exercício 16
+# ------------------------------------------------------------
+# ------------------------------------------------------------
+# Exercício 17
+# ------------------------------------------------------------
+# ------------------------------------------------------------
+# Exercício 18
+# ------------------------------------------------------------
+# ------------------------------------------------------------
+# Exercício 19
+# ------------------------------------------------------------
+# ------------------------------------------------------------
+# Exercício 20
+# ------------------------------------------------------------
