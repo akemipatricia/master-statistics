@@ -1,24 +1,17 @@
-Ficha 01 - Estatística Aplicada
+Computational Statistics - DM/FCUP
 ================
 Patricia Akemi
 2026-09-20
 
-## Exercício 1
 
-**Enunciado:** Um grupo de investigadores recolheu os seguintes dados
-para o peso da glândula pituitária numa amostra constituída por quatro
-ratinhos: média = 9.0 mg, desvio padrão = 0.6 mg. Pretende-se determinar
-um intervalo de confiança a 95% para o peso médio da glândula pituitária
-da população de ratinhos. Sob que hipóteses é que este intervalo é
-válido?
+### For each exercise, replicate the given graph.
 
-### Dados do problema
+**1 (a)** Faceted smoothing - iris dataset
 
-``` r
-alpha <- 0.05
-n <- 4
-mean.peso <- 9.0
-sd.peso <- 0.6
+``` {r pressure, echo=FALSE}
+#library(iris)
+head(iris)
+
 ```
 
 ### Cálculo do intervalo de confiança a 95%

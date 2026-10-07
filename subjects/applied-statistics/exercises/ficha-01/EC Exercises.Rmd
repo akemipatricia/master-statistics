@@ -1,0 +1,204 @@
+---
+title: "Computational Statistics - DM/FCUP"
+author: "Patricia Akemi"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include=FALSE}
+library(ggplot2)
+library(tidyverse)
+library(ggthemes)
+```
+
+### For each exercise, replicate the given graph.
+
+#### *1 (a)* Faceted smoothing - iris dataset
+
+```{r iris}
+summary(iris[,c('Petal.Length','Petal.Width','Species')])
+```
+If we just want to show the whole scatter plot would be easier:
+
+```{r }
+(
+  ggplot(iris,aes(x=Petal.Length,y=Petal.Width,colour=Species))
+  +geom_point()
+)
+```
+But we want the whole scatter plot plus how is distributed by Species as well. To do this it is necessary to pile the dataset.
+
+```{r }
+iris_all <- bind_rows(
+  # copy and paste the whole dataset, in the column Species it is put the category ALL
+  iris %>% mutate(Species = "ALL"),                 
+  # original dataset, in the column Species it is put the original category 
+  iris %>% mutate(Species = as.character(Species))  
+)
+```
+
+```{r}
+(
+  ggplot(iris_all, aes(x = Petal.Length, y = Petal.Width, colour=Species)) 
+  # uses one point per flower
+  +geom_point(size=0.5)           
+  # curva suavizada + faixa de confiança cinza
+  +geom_smooth(method = "loess") 
+  +facet_wrap(~ Species)    # um painel por grupo, cada um com eixos próprios
+  +labs(x = "Petal Length", y = "Petal Width") 
+  +theme_bw()   
+)
+```
+
+#### (b) Tufte style: mtcars
+
+```{r }
+mtcars$cars = row.names(mtcars)
+head(mtcars[,c('mpg','cars')])
+```
+
+```{r }
+(
+  ggplot(mtcars,aes(x = mpg, y = fct_reorder(cars, mpg))) # the function fct_reorder order the variable by other
+  +geom_point()
+  +geom_text(aes(label = cars), hjust = 0, nudge_x = 0.3, size = 3)
+  +labs(x = "MPG", y="")
+  +theme(axis.text.y  = element_blank(),axis.ticks.y = element_blank(),)
+)
+
+```
+
+#### (c) Buble plot: mtcars
+
+```{r}
+mtcars = mtcars %>% mutate(am=factor(am,labels=c('Manual','Automatic')))
+head(mtcars[,c("mpg", "qsec", "disp", "am")])
+```
+
+
+```{r}
+(
+  ggplot(mtcars,aes(x=mpg,y=qsec,size=disp,colour=am))
+  +geom_point()
+  +labs(x='Miles per gallon',y='1/4 mile time',size='Displacement',colour='Gear')
+  +theme_bw()
+)
+```
+
+#### (d) Time series: economics
+
+```{r}
+head(economics[,c('date','uempmed')])
+```
+```{r}
+(
+  ggplot(economics,aes(x=date,y=uempmed))
+  +geom_line()
+  +labs(title='Median duration of unemployment (weeks)',x='',y='Median duration of unemployment (weeks)')
+  +theme_economist()
+)
+```
+### 2 - diamonds
+
+In the figure below, we can see that the relationship between carat and price follows a similar pattern for every diamond color.  
+```{r}
+(
+  ggplot(diamonds,aes(x=carat,y=price,color=color))
+  +geom_point()
+  +facet_wrap(~color)
+)
+```
+However, when we put the colors together in the same plot, we see that the maximum price and the maximum carat are different for each color. In addition, the strength of the correlation between carat and price also changes from color to color.
+```{r}
+(
+  ggplot(diamonds,aes(x=carat,y=price,color=color))
+  #+geom_point()
+  +geom_smooth(method='lm')
+)
+```
+### 3 - hglights
+```{r}
+library(hflights)
+dim(hflights)
+head(hflights[,c('ArrDelay','ArrTime','DayOfWeek')])
+```
+```{r}
+hflights2 <- hflights %>%
+  filter(!is.na(ArrDelay), !is.na(ArrTime)) %>%   # remove voos cancelados/desviados
+  mutate(
+    ArrDelay = pmax(ArrDelay, 0),                 # atrasos negativos (adiantados) viram 0
+    HourArrTime = (ArrTime %/% 100) ,               # ArrTime é hhmm; divisão inteira dá a hora (24 vira 0)
+    DayOfWeek2  = factor(DayOfWeek, levels = 1:7,
+                  labels = c("Mon","Tue","Wed","Thu","Fri","Sat","Sun"))  # 1 = segunda
+  )
+
+hflights2[,c('ArrDelay','HourArrTime','ArrTime','DayOfWeek2','DayOfWeek')]
+```
+
+```{r}
+hflights3 = hflights2 %>% 
+  group_by(DayOfWeek2,HourArrTime) %>%
+  summarise(AvgArrDelay=mean(ArrDelay),
+            PropDelay=mean(ArrDelay>0),
+            .groups = 'drop')
+hflights3
+```
+
+```{r}
+(
+  ggplot(hflights3, aes(x = HourArrTime, y = DayOfWeek2, fill = AvgArrDelay)) 
+  +geom_tile() 
+  +labs(x = "Arrival Time", y = NULL, fill = "Average Delay (min)")
+)
+
+```
+```{r}
+(
+  ggplot(hflights3, aes(x = HourArrTime, y = DayOfWeek2, fill = PropDelay)) 
+  +geom_tile() 
+  +labs(x = "Arrival Time", y = NULL, fill = "Average Delay (min)")
+)
+
+```
+
+```{r}
+rotulos <- distinct(hflights3, DayOfWeek2)   # uma linha por dia da semana
+
+ggplot(hflights3, aes(x = HourArrTime, y = DayOfWeek2, fill = PropDelay)) +
+  geom_tile(colour = "white") +
+  geom_text(data = rotulos,                                  # usa a tabela pequena, não a base toda
+            aes(x = 0, y = DayOfWeek2, label = DayOfWeek2),  # escreve o nome do dia sobre a hora 0
+            inherit.aes = FALSE,                             # não herda o fill = PropDelay
+            colour = "white", size = 2.5) +
+  coord_polar() +
+  scale_x_continuous(breaks = 0:23) +
+  scale_y_discrete(expand = expansion(add = c(3, 0.5))) +
+  scale_fill_viridis_c(labels = scales::percent) +
+  labs(x = "Arrival Time", y = NULL, fill = "Proportion delayed") +
+  theme_minimal() +
+  theme(axis.text.y = element_blank())   
+
+```
+```{r}
+rotulos <- distinct(hflights3, DayOfWeek2)   # uma linha por dia da semana
+
+ggplot(hflights3, aes(x = HourArrTime, y = DayOfWeek2, fill = AvgArrDelay)) +
+  geom_tile(colour = "white") +
+  geom_text(data = rotulos,                                  # usa a tabela pequena, não a base toda
+            aes(x = 0, y = DayOfWeek2, label = DayOfWeek2),  # escreve o nome do dia sobre a hora 0
+            inherit.aes = FALSE,                             # não herda o fill = PropDelay
+            colour = "white", size = 2.5
+            ) +
+  coord_polar() +
+  scale_x_continuous(breaks = 0:23) +
+  scale_y_discrete(expand = expansion(add = c(3, 0.5))) +
+  scale_fill_viridis_c() +
+  labs(x = "Arrival Time", y = NULL, fill = "Average Delay (min)") +
+  theme_minimal() +
+  theme(axis.text.y = element_blank())   
+
+```
