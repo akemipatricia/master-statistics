@@ -13,15 +13,167 @@ knitr::opts_chunk$set(echo = TRUE)
 library(ggplot2)
 library(tidyverse)
 library(ggthemes)
+library(patchwork)
 ```
 
-### For each exercise, replicate the given graph.
+### Worksheet 1 - Ex 09
+
+```{r}
+#install.packages('faraway')
+library(faraway)
+head(nepali)
+```
+
+#### (a) Unique children
+
+```{r}
+length(unique(nepali$id))
+```
+#### (b) How many unique households are represented in the dataset?
+
+```{r}
+hh <- substr(nepali$id, 1, 5)   
+length(unique(hh))  
+```
+
+#### (c) Some of the observations on children are missing the height ("ht") or weight ("wt") data. Are there any observations missing one but not both of these data fields?
+
+```{r}
+sum(is.na(nepali$ht))
+sum(is.na(nepali$wt))
+sum(xor(is.na(nepali$wt),is.na(nepali$wt)))
+sum(is.na(nepali$wt) & is.na(nepali$wt))
+```
+
+#### (d) Are there any other missing observations in the dataset?
+
+```{r}
+colSums(is.na(nepali))
+```
+
+#### (e) Compare (numerically and graphically) the weights of boys and girls.
+
+summary(nepali)
+
+```{r}
+tapply(nepali$wt, nepali$sex, mean, na.rm = TRUE)
+nepali$sex = factor(nepali$sex, levels = c(1, 2), labels = c("male", "female"))
+ggplot(nepali,aes(x=sex,y=wt))+geom_boxplot()
+```
+
+#### (f) Numerically describe the ages of the mothers that have never had children that died.
+
+```{r}
+maes <- unique(nepali[, c("ht", "mage", "lit", "died", "alive")])
+nrow(maes)   # 127
+summary(maes$mage[maes$died == 0])
+sd(maes$mage[maes$died == 0])
+```
+
+#### (g) Graphically assess whether, in general, mothers with no literacy have their children at younger ages than literate mothers.
+
+```{r}
+ord  <- nepali[order(nepali$id, nepali$age), ]
+# primeira visita de cada criança
+prim <- ord[!duplicated(ord$id), ]                 
+# idade da mãe quando a criança nasceu
+prim$idade_parto <- prim$mage - prim$age / 12      
+
+boxplot(idade_parto ~ lit, data = prim,
+        xlab = "Mãe alfabetizada", ylab = "Idade da mãe ao nascimento (anos)")
+```
+
+#### (h) Study, numerically and graphically, the association between the literacy of the mothers and the number of children that have died. Interpret the results.
+
+```{r}
+table(maes$lit)                                  
+tapply(maes$died, maes$lit, mean)                  
+tab <- table(maes$lit, maes$died)
+round(prop.table(tab, 1), 3)
+
+barplot(prop.table(tab, 1), beside = TRUE, legend.text = TRUE,
+        args.legend = list(title = "Alfabetizada"),
+        xlab = "Nº de filhos que morreram", ylab = "Proporção")
+
+wilcox.test(died ~ lit, data = maes)
+```
+
+#### (i) Describe the mothers that are aged less than 40 years-old and did not have children that died
+
+```{r}
+summary(subset(maes, mage < 40 & died == 0))
+```
+
+#### (j) Is it true that older mothers tend to have more children that have died?
+
+```{r}
+cor(maes$mage, maes$died, method = "spearman")   
+plot(jitter(maes$mage), jitter(maes$died),
+     xlab = "Idade da mãe", ylab = "Nº de filhos que morreram")
+lines(lowess(maes$mage, maes$died), col = "red", lwd = 2)
+```
+
+#### (k) Do boys tend to be taller and heavier than girls? Give an answer based on a single plot and adequate numerical measures.
+
+```{r}
+plot(nepali$ht, nepali$wt, col = c("blue", "red")[nepali$sex],
+     xlab = "Altura (cm)", ylab = "Peso (kg)")
+legend("topleft", legend = levels(nepali$sex), col = c("blue", "red"), pch = 1)
+
+aggregate(cbind(ht, wt) ~ sex, data = nepali, FUN = mean)
+aggregate(cbind(ht, wt) ~ sex, data = nepali, FUN = median)
+aggregate(cbind(ht, wt) ~ sex, data = nepali, FUN = sd)
+```
+
+#### (l) How old is the child from the youngest (resp. oldest) mother in the sample?
+
+```{r}
+nepali[nepali$mage == min(nepali$mage), c("id", "mage", "age")]
+nepali[nepali$mage == max(nepali$mage), c("id", "mage", "age")]
+```
+
+#### (m) MCreate a logical vector that returns the value TRUE whenever "mage"is greater than 30, and FALSE otherwise
+
+```{r}
+mage30 <- nepali$mage > 30
+table(mage30)     
+```
+
+#### (n) Discretize the variable representing the mothers' ages into 3 classes as: <20 years-old; 20-34 years-old; >34 years-old. Is it true that most of the children from mothers in the younger group did not die?
+
+```{r}
+nepali$mage.cl <- cut(nepali$mage, breaks = c(-Inf, 20, 35, Inf),
+                      right = FALSE, labels = c("<20", "20-34", ">34"))
+
+criancas <- nepali[!duplicated(nepali$id), ]              
+tapply(criancas$died == 0, criancas$mage.cl, mean)
+```
+
+#### (o) The variable "age", representing the age of each child in the sample, is in months. Create a new variable, named "age.year", that provides each child's age in years, with no decimal places. Obtain a single plot picturing the boxplots of weight for each age of the child (in years), using blue for the boxplots corresponding to boys and red to girls. Include a legend for colours in the picture.
+
+```{r}
+nepali$age.year <- floor(nepali$age / 12)         
+
+boxplot(wt ~ sex + age.year, data = nepali,
+        col = c("blue", "red"), las = 2,
+        xlab = "", ylab = "Peso (kg)")
+legend("topleft", legend = c("male", "female"), fill = c("blue", "red"))
+```
+
+#### (p) Export the data for girls as a comma-separated file.
+
+```{r}
+#write.csv(subset(nepali, sex == "female"), "nepali_girls.csv", row.names = FALSE)
+```
+
+### Worksheet 2 - ggplot
 
 #### *1 (a)* Faceted smoothing - iris dataset
 
 ```{r iris}
 summary(iris[,c('Petal.Length','Petal.Width','Species')])
 ```
+
 If we just want to show the whole scatter plot would be easier:
 
 ```{r }
@@ -30,6 +182,7 @@ If we just want to show the whole scatter plot would be easier:
   +geom_point()
 )
 ```
+
 But we want the whole scatter plot plus how is distributed by Species as well. To do this it is necessary to pile the dataset.
 
 ```{r }
@@ -102,24 +255,25 @@ head(economics[,c('date','uempmed')])
   +theme_economist()
 )
 ```
+
 ### 2 - diamonds
 
 In the figure below, we can see that the relationship between carat and price follows a similar pattern for every diamond color.  
 ```{r}
-(
-  ggplot(diamonds,aes(x=carat,y=price,color=color))
+p2 <- (ggplot(diamonds,aes(x=carat,y=price,color=color))
   +geom_point()
-  +facet_wrap(~color)
-)
-```
-However, when we put the colors together in the same plot, we see that the maximum price and the maximum carat are different for each color. In addition, the strength of the correlation between carat and price also changes from color to color.
-```{r}
-(
-  ggplot(diamonds,aes(x=carat,y=price,color=color))
+  +facet_wrap(~color))
+
+p3 <- (ggplot(diamonds,aes(x=carat,y=price,color=color))
   #+geom_point()
-  +geom_smooth(method='lm')
-)
+  +geom_smooth(method='lm'))
 ```
+
+However, when we put the colors together in the same plot, we see that the maximum price and the maximum carat are different for each color. In addition, the strength of the correlation between carat and price also changes from color to color.
+```{r , fig.width = 14, fig.height = 7, out.width = "100%"}
+p2+p3
+```
+
 ### 3 - hglights
 ```{r}
 library(hflights)
@@ -136,7 +290,7 @@ hflights2 <- hflights %>%
                   labels = c("Mon","Tue","Wed","Thu","Fri","Sat","Sun"))  # 1 = segunda
   )
 
-hflights2[,c('ArrDelay','HourArrTime','ArrTime','DayOfWeek2','DayOfWeek')]
+head(hflights2[,c('ArrDelay','HourArrTime','ArrTime','DayOfWeek2','DayOfWeek')])
 ```
 
 ```{r}
@@ -145,30 +299,30 @@ hflights3 = hflights2 %>%
   summarise(AvgArrDelay=mean(ArrDelay),
             PropDelay=mean(ArrDelay>0),
             .groups = 'drop')
-hflights3
+head(hflights3)
 ```
 
 ```{r}
-(
+p4 <- (
   ggplot(hflights3, aes(x = HourArrTime, y = DayOfWeek2, fill = AvgArrDelay)) 
   +geom_tile() 
   +labs(x = "Arrival Time", y = NULL, fill = "Average Delay (min)")
 )
-
-```
-```{r}
-(
+p5 <- (
   ggplot(hflights3, aes(x = HourArrTime, y = DayOfWeek2, fill = PropDelay)) 
   +geom_tile() 
   +labs(x = "Arrival Time", y = NULL, fill = "Average Delay (min)")
 )
 
 ```
+```{r, fig.width = 14, fig.height = 7, out.width = "100%"}
+p4+p5
+```
 
 ```{r}
 rotulos <- distinct(hflights3, DayOfWeek2)   # uma linha por dia da semana
 
-ggplot(hflights3, aes(x = HourArrTime, y = DayOfWeek2, fill = PropDelay)) +
+p6 <- ggplot(hflights3, aes(x = HourArrTime, y = DayOfWeek2, fill = PropDelay)) +
   geom_tile(colour = "white") +
   geom_text(data = rotulos,                                  # usa a tabela pequena, não a base toda
             aes(x = 0, y = DayOfWeek2, label = DayOfWeek2),  # escreve o nome do dia sobre a hora 0
@@ -182,11 +336,9 @@ ggplot(hflights3, aes(x = HourArrTime, y = DayOfWeek2, fill = PropDelay)) +
   theme_minimal() +
   theme(axis.text.y = element_blank())   
 
-```
-```{r}
-rotulos <- distinct(hflights3, DayOfWeek2)   # uma linha por dia da semana
+#rotulos <- distinct(hflights3, DayOfWeek2)   # uma linha por dia da semana
 
-ggplot(hflights3, aes(x = HourArrTime, y = DayOfWeek2, fill = AvgArrDelay)) +
+p7 <- ggplot(hflights3, aes(x = HourArrTime, y = DayOfWeek2, fill = AvgArrDelay)) +
   geom_tile(colour = "white") +
   geom_text(data = rotulos,                                  # usa a tabela pequena, não a base toda
             aes(x = 0, y = DayOfWeek2, label = DayOfWeek2),  # escreve o nome do dia sobre a hora 0
@@ -199,6 +351,9 @@ ggplot(hflights3, aes(x = HourArrTime, y = DayOfWeek2, fill = AvgArrDelay)) +
   scale_fill_viridis_c() +
   labs(x = "Arrival Time", y = NULL, fill = "Average Delay (min)") +
   theme_minimal() +
-  theme(axis.text.y = element_blank())   
+  theme(axis.text.y = element_blank())  
+```
+```{r}
+p6+p7
 
 ```
