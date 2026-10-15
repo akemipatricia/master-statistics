@@ -848,5 +848,161 @@ summary(aov(consonante~metodo_motivacao+nivel_inicial)) # 0.0144
 # ex 09
 
 maturidade_emocional= c(25, 18, 17, 28, 23, 24,22, 19, 19,28, 16, 18, 32, 24, 22,30, 20, 20,25, 14, 10, 35, 16, 8,30, 15, 12)
-grupo_etario = rep(c('15-19','20-24','25-29'),each=9)
-consumo = c('Nunca','Ocasionalmente','Diariamente')
+grupo_etario = factor(rep(c('15-19','20-24','25-29'),each=9),levels=c('15-19','20-24','25-29'))
+consumo = factor(rep(c("Nunca","Ocasional","Diario"), times = 9),
+                 levels = c("Nunca","Ocasional","Diario"))
+
+mod <- aov(maturidade_emocional ~ grupo_etario * consumo)
+mod <- aov(maturidade_emocional ~ grupo_etario+consumo+consumo*grupo_etario)
+summary(mod)
+# check residuals
+hist(mod$residuals)
+shapiro.test(mod$residuals)
+
+# check homoscedasticity
+plot(fitted(mod),residuals(mod))
+interaction.plot(consumo, grupo_etario, maturidade_emocional,col=rainbow(3))
+
+# try transformation
+
+mod2 <- aov(1/maturidade_emocional ~ grupo_etario * consumo)
+summary(mod2)
+# check residuals
+hist(mod2$residuals)
+# check homoscedasticity
+plot(fitted(mod2),residuals(mod2))
+interaction.plot(consumo, grupo_etario, 1/maturidade_emocional,col=rainbow(3))
+
+
+
+# ex 10
+
+m <- c(4.31,4.68,4.17,5.75, 4.89,6.18,3.77,5.70, 4.05,4.48,5.20,5.53,
+              4.44,4.23,5.28,5.97, 4.59,5.92,4.44,5.52, 4.13,3.41,3.89,4.58,
+              4.61,3.64,3.64,5.21, 3.91,3.32,4.18,5.50, 4.52,3.51,4.48,5.18,
+              4.43,3.75,4.27,4.15, 3.79,4.63,5.81,6.89, 4.17,4.59,5.20,6.18,
+              4.47,4.90,5.34,6.21, 4.35,5.31,5.94,7.56, 3.59,4.81,5.56,6.73)
+grupo_etario <- factor(rep(c(1,2,3),each=20))
+ocupacao <- factor(rep(c('a','b','c','d'),15))
+length(ocupacao)
+mod2 <- aov(m ~ grupo_etario * ocupacao)
+summary(mod2)
+interaction.plot(ocupacao, grupo_etario, m)
+
+# check residuals
+hist(mod2$residuals)
+shapiro.test(mod2$residuals)
+
+# check homoscedasticity
+plot(fitted(mod2),residuals(mod2))
+interaction.plot(consumo, grupo_etario, maturidade_emocional,col=rainbow(3))
+
+
+# Efeito do consumo. Todas as linhas descem de Nunca para Ocasional. Quem nunca consome tem maior maturidade emocional (média 28,3, contra 18,3 e 16,7). É o efeito mais forte (F = 38,9).
+# Efeito da idade. As linhas estão a alturas diferentes, mas a diferença depende do consumo. Entre os que nunca consomem, os mais velhos (20-24 e 25-29, ambos com 30) estão acima dos 15-19 (25). Entre os que consomem diariamente, os 25-29 ficam muito abaixo (10). Na média geral, o grupo 25-29 é o mais baixo (18,3).
+# Interacção. As linhas não são paralelas e chegam a cruzar-se: a 25-29 parte do topo e termina bem abaixo das outras.
+# Nos 25-29 a maturidade cai sempre, e de forma acentuada: 30 → 15 → 10.
+# Nos 15-19 e 20-24 cai de Nunca para Ocasional e depois estabiliza (20 → 20). Consumir diariamente não piora em relação a consumir ocasionalmente.
+# A queda total também difere: 5 pontos nos 15-19, 10 nos 20-24 e 20 nos 25-29.
+
+# Conclusão para o relatório: o consumo de marijuana está associado a menor maturidade emocional, mas a magnitude desse efeito depende da idade. É muito mais forte no grupo 25-29, o único em que o consumo diário se distingue do ocasional. Como a interacção é significativa (p = 0,007), não faz sentido falar de “o efeito do consumo” sem indicar o grupo etário.
+
+
+
+x=c(-1,-1,-1,-1,-1,0,0,0,0,0,1,1,1,1,1,2,2,2,2,2,
+      3,3,3,3,3)
+y=c(8,1,1,3,1,5,6,9,7,4,13,7,12,10,11,17,14,14,19,
+      13,17,17,20,18,15)
+plot(x,y)
+
+
+
+x=c(8,6,11,12,14,17,18,24,19,23,26,40)
+y=c(59,58,56,53,50,45,43,42,39,38,30,27)
+plot(x,y)
+modelo=lm(y~x)
+summary(modelo)
+confint(modelo) # intervalos de confianca para o modelo, o alpha e beta estará nesse intervalo
+confint(modelo,level=0.99)
+predict(modelo,data.frame(x=20))
+predict(modelo,data.frame(x=20),int="c")
+predict(modelo,data.frame(x=20),int="confidence")
+predict(modelo,data.frame(x=20),int="p")
+
+predict(modelo,data.frame(x=20),int="prediction")
+novo=data.frame(x=seq(7,40,1))
+bandas.prev= predict(modelo, novo, interval="prediction")
+bandas.conf= predict(modelo, novo, interval="c")
+matplot(novo$x,cbind(bandas.conf, bandas.prev[,-1]),lty=c(1,2,2,3,3), type="l",xlab="x", ylab="y")
+points(x,y)
+
+
+### FICHA 05 ----
+
+## 01
+precox <- c(100, 90, 80, 70, 70, 70, 70, 65, 60, 60, 55, 60)
+vendasy <- c(55, 70, 90, 100, 90, 105, 80, 110, 125, 115, 130, 130)
+df = data.frame(preco=precox,vendas=vendasy)
+n = length(df$vendas)
+
+x_futuro = 85
+
+# i. Desenhe o diagrama de dispersão dos dados.
+plot(p_x,v_y)
+ggplot(df,aes(x=preco,y=vendas))+geom_point()
+
+# ii. Determine os coeficientes da recta de regressão usando o MMQ.
+mod <- lm(vendasy~precox)
+summary(mod)
+
+# iii. Calcule o coeficiente de correlação linear de Pearson e verifique se é significativamente diferente de zero.
+cor.test(df$preco,df$vendas,method='pearson') # t = -7.9529, df = 10, p-value = 1.24e-05
+
+# iv. Crie uma tabela ANOVA e use um teste F para testar a hipótese nula de que β=0.
+media_x = mean(df$preco)
+media_y = mean(df$vendas)
+
+ssx = sum((df$preco-media_x)^2) # 1941.667
+ssy = sum((df$vendas-media_y)^2) # 6300
+ssxy = sum((df$preco-media_x)*(df$vendas-media_y)) # -3250
+# sum_xy = sum(df$preco*df$vendas)-length(df$vendas)*media_x*media_y
+beta = ssxy/ssx # -1.67382
+alpha = media_y-beta*media_x # 218.5622
+var_amostra = ssy-beta*ssxy
+sigma = var_amostra/(length(df$preco-2))
+
+t_ = beta/sigma*sqrt(ssx) # -1.029
+t_critico = qt(1-0.05/2,length(df$preco)-2) # 2.22813
+# nao rejeita?
+
+# v. Construa um intervalo de confiança a 95% para β.
+confint(mod)
+(alpha+beta*x_futuro)+c(-1,1)*t_critico*sqrt(sigma*(1/n+(x_futuro-media_x/ssx)))
+mod$
+
+# vi. Construa intervalos de previsão para y e para μy, para x0 dado.
+x=c(100, 90, 80, 70, 70, 70, 70, 65, 60, 60, 55, 60)
+y=c(55, 70, 90, 100, 90, 105, 80, 110, 125, 115, 130, 130)
+plot(x,y)
+modelo=lm(y~x)
+summary(modelo)
+confint(modelo)
+confint(modelo,level=0.99)
+ychapeu = predict(modelo,data.frame(x=85))
+
+ychapeu+c(-1,1)*t_critico*sqrt(sigma*(1+1/n+(x_futuro-media_x/ssx)))
+
+# vii. Calcule o coeficiente de determinação.
+ssr = sum((ychapeu-media_y)^2)
+r2 = ssr/ssy
+
+
+# 02
+
+altura_pai = c(63, 64, 70, 72, 65, 67, 68, 66)
+altura_filho = c(65, 67, 69, 70, 64, 68, 71, 63)
+plot(altura_pai,altura_filho)
+mod = lm(altura_filho~altura_pai)
+summary(mod)
+cor.test(altura_pai,altura_filho)
+
