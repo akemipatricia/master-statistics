@@ -45,6 +45,10 @@ plot_dist_t <- function(n = 4, mean_sample = 9, dp_sample = 0.6, alpha = 0.05) {
 }
 
 
+############
+# Ficha 01 ----
+############
+
 # ------------------------------------------------------------
 # Exercício 1
 # ------------------------------------------------------------
@@ -323,18 +327,18 @@ composto = seq(1:10)
 (t.test(d, mu = 0, alternative = "two.sided", conf.level = 0.95))
 
 
-# ------------------------------------------------------------
+####
 # Exercício 12
-# ------------------------------------------------------------
+####
 
 n = 120
 pa = 0.15
 prop.test()
 
 
-# ------------------------------------------------------------
+####
 # Exercício 13
-# ------------------------------------------------------------
+####
 
 n = 150
 p = 0.05
@@ -390,9 +394,9 @@ getCoverages <- function(numSamples = 10000,numTrials = 100, method, correct = F
 
 ac <- getCoverages(method ="agresticoull")
 
-# ------------------------------------------------------------
+####
 # Exercício 14
-# ------------------------------------------------------------
+####
 
 n=100
 phat = 40/n
@@ -411,9 +415,9 @@ prop.test(x = 40, n = 100, correct = FALSE) # nao rejeita H0
 prop.test(x = 40, n = 100, correct = TRUE) # correcao de continuidade de yates - utilizar quando o n for pequeno ou a prop for extrema
 
 
-# ------------------------------------------------------------
+####
 # Exercício 15
-# ------------------------------------------------------------
+####
 
 n=670
 phat = 0.66
@@ -422,9 +426,9 @@ z = (phat-p)/(sqrt(p*(1-p)/n))
 pnorm(z)
 qnorm(phat, mean = p, sd = (sqrt(p*(1-p)/n)), lower.tail = TRUE, log.p = FALSE)
 
-# ------------------------------------------------------------
+####
 # Exercício 16
-# ------------------------------------------------------------
+####
 
 n=250
 phat = 238/n
@@ -433,12 +437,12 @@ p = 0.9
 z = (phat-p)/(sqrt((p*(1-p))/n))
 1-pnorm(z)
 
-# ------------------------------------------------------------
+####
 # Exercício 17
-# ------------------------------------------------------------
-# ------------------------------------------------------------
+####
+####
 # Exercício 18
-# ------------------------------------------------------------
+####
 
 
 n = 300
@@ -492,29 +496,11 @@ teste
 
 t.chisq()
 
-# ------------------------------------------------------------
+####
 # Exercício 19
-# ------------------------------------------------------------
-
-
-total_sn = c(124,276)
-comu_12 = c(200,200)
-n = sum(total_sn)
-
-dados <- matrix(
-  c(43,157,   
-    81, 119
-  ),
-  nrow = 2,
-  byrow = TRUE
-)
-
-teste <- chisq.test(dados)
-cor.test()
-
-# ------------------------------------------------------------
+########
 # Exercício 20
-# ------------------------------------------------------------
+####
 
 
 
@@ -547,6 +533,9 @@ y = c(0.878, 0.647, 0.598, 2.05, 1.06, 1.29, 1.06, 3.14, 1.25)
 t.test(x,y,conf.level = 0.05)
 
 
+############
+# Ficha 02 ----
+############
 
 #----------------------------------------------
 # lista 2 - nao parametrica
@@ -945,59 +934,65 @@ vendasy <- c(55, 70, 90, 100, 90, 105, 80, 110, 125, 115, 130, 130)
 df = data.frame(preco=precox,vendas=vendasy)
 n = length(df$vendas)
 
-x_futuro = 85
+x0 = 85
 
 # i. Desenhe o diagrama de dispersão dos dados.
-plot(p_x,v_y)
 ggplot(df,aes(x=preco,y=vendas))+geom_point()
 
 # ii. Determine os coeficientes da recta de regressão usando o MMQ.
-mod <- lm(vendasy~precox)
-summary(mod)
+
+# a mao
+x_avg = mean(df$preco) # 70.83
+y_avg = mean(df$vendas) # 100
+ssx = sum((df$preco-x_avg)^2) # 1941.66
+ssy = sum((df$vendas-y_avg)^2) # 6300
+ssxy = sum((df$preco-x_avg)*(df$vendas-y_avg)) # -3250
+beta = ssxy/ssx # -1.67
+alpha = y_avg-beta*x_avg # 218.56
 
 # iii. Calcule o coeficiente de correlação linear de Pearson e verifique se é significativamente diferente de zero.
 cor.test(df$preco,df$vendas,method='pearson') # t = -7.9529, df = 10, p-value = 1.24e-05
 
 # iv. Crie uma tabela ANOVA e use um teste F para testar a hipótese nula de que β=0.
-media_x = mean(df$preco)
-media_y = mean(df$vendas)
 
-ssx = sum((df$preco-media_x)^2) # 1941.667
-ssy = sum((df$vendas-media_y)^2) # 6300
-ssxy = sum((df$preco-media_x)*(df$vendas-media_y)) # -3250
-# sum_xy = sum(df$preco*df$vendas)-length(df$vendas)*media_x*media_y
-beta = ssxy/ssx # -1.67382
-alpha = media_y-beta*media_x # 218.5622
-var_amostra = ssy-beta*ssxy
-sigma = var_amostra/(length(df$preco-2))
+mod <- lm(vendasy~precox)
+summary(mod)
+anova(mod)
+ssr = beta*ssxy
+sse = ssy-ssr
+# sse = sum(mod$residuals^2)
+sigma2 = sse/(n-2)
+F_ = (ssr/1)/sigma2
 
-t_ = beta/sigma*sqrt(ssx) # -1.029
-t_critico = qt(1-0.05/2,length(df$preco)-2) # 2.22813
-# nao rejeita?
+qf(0.95,1,n-2)
 
 # v. Construa um intervalo de confiança a 95% para β.
+se_beta = sqrt(sigma2/ssx)
+t_ = beta/se_beta # -7.95
+tc = qt(0.975,n-2)
+beta+c(-1,1)*tc*se_beta
 confint(mod)
-(alpha+beta*x_futuro)+c(-1,1)*t_critico*sqrt(sigma*(1/n+(x_futuro-media_x/ssx)))
-mod$
 
 # vi. Construa intervalos de previsão para y e para μy, para x0 dado.
-x=c(100, 90, 80, 70, 70, 70, 70, 65, 60, 60, 55, 60)
-y=c(55, 70, 90, 100, 90, 105, 80, 110, 125, 115, 130, 130)
-plot(x,y)
-modelo=lm(y~x)
-summary(modelo)
-confint(modelo)
-confint(modelo,level=0.99)
-ychapeu = predict(modelo,data.frame(x=85))
+y_hat = predict(mod,data.frame(precox=x0))
+y_hat2 = alpha+beta*x0
 
-ychapeu+c(-1,1)*t_critico*sqrt(sigma*(1+1/n+(x_futuro-media_x/ssx)))
+h = 1/n+(x0-x_avg)^2/ssx
+
+y_hat + c(-1,1)*tc*sqrt(sigma2*h)
+y_hat + c(-1,1)*tc*sqrt(sigma2*(1+h))
+
+predict(mod,data.frame(precox=x0),interval='confidence')
+predict(mod,data.frame(precox=x0),interval='prediction')
+
 
 # vii. Calcule o coeficiente de determinação.
 ssr = sum((ychapeu-media_y)^2)
 r2 = ssr/ssy
+cor.test(df$preco,df$vendas)
 
 
-# 02
+#### 02 ----
 
 altura_pai = c(63, 64, 70, 72, 65, 67, 68, 66)
 altura_filho = c(65, 67, 69, 70, 64, 68, 71, 63)
@@ -1005,4 +1000,251 @@ plot(altura_pai,altura_filho)
 mod = lm(altura_filho~altura_pai)
 summary(mod)
 cor.test(altura_pai,altura_filho)
+
+
+### estatistica computacional
+
+
+# apresentacao -------------------
+# worksheet 1- ex9 (com instrucoes usuais + tidyr) - resolver em markdown
+# worksheet 2- ggplot - resolver em markdown
+#--------------------
+
+# aula 3
+
+###---- 
+# histograma
+hist(mtcars$mpg)
+
+plot(mtcars$) # histogram boxplot
+boxplot(mtcars$mpg ~ mtcars$cyl)
+attach(mtcars)
+
+boxplot(mpg[cyl==4],mpg[cyl==8])
+boxplot(mpg~cyl)
+
+
+install.packages('hflights')
+library(hflights)
+attach(hflights)
+head(hflights)
+hflights$ArrDelay
+hflights$ArrTime
+hflights[,DayOfWeek]
+hflights[,c(ArrDelay,ArrTime,DayOfWeek)]
+hflights[,c(ArrDelay,ArrTime,DayOfWeek)]
+
+
+
+#### worksheet 1 - ex 9
+
+library(tidyverse)
+library(faraway)
+
+
+library(faraway)
+help(nepali)   # sex: 1 = menino, 2 = menina; lit: 0 = não alfabetizada, 1 = alfabetizada
+head(nepali)
+
+dados <- nepali
+dados$sex <- factor(dados$sex, levels = 1:2, labels = c("boy", "girl"))  # códigos viram rótulos
+dados$lit <- factor(dados$lit, levels = 0:1, labels = c("no", "yes"))
+dados$hh  <- substr(dados$id, 1, 5)   # agregado familiar: id sem o último dígito
+
+# uma linha por mãe (a base repete a mãe em cada visita de cada filho)
+maes <- unique(dados[, c("hh", "mage", "lit", "died", "alive")])
+
+# (a) Crianças únicas
+length(unique(dados$id))  
+
+# (b) Agregados familiares únicos
+length(unique(dados$hh))   # hh foi criado acima com substr(id, 1, 5)
+
+# (c) Falta altura ou peso, mas não ambos?
+sum(xor(is.na(dados$ht), is.na(dados$wt)))   # xor: TRUE se só um dos dois falta; sum conta os TRUE
+
+# (d) Outros valores em falta
+colSums(is.na(dados))   # nº de NA em cada coluna
+
+# (e) Peso de meninos e meninas
+tapply(dados$wt, dados$sex, summary)             # aplica summary ao peso, separado por sexo
+tapply(dados$wt, dados$sex, sd, na.rm = TRUE)    # desvio-padrão por sexo, ignorando NA
+
+boxplot(wt ~ sex, data = dados,                  # fórmula: peso em função do sexo
+        col = c("blue", "red"), xlab = "Sexo", ylab = "Peso (kg)")
+
+# (f) Idade das mães sem filhos que morreram
+
+summary(maes$mage[maes$died == 0])   # [condição] filtra o vetor; summary dá min, quartis, média, max
+sd(maes$mage[maes$died == 0])
+
+# (g) Mães não alfabetizadas têm filhos mais cedo?
+ord <- dados[order(dados$id, dados$age), ]     # ordena por criança e por idade
+prim <- ord[!duplicated(ord$id), ]             # fica só a 1ª linha (1ª visita) de cada criança
+prim$idade_parto <- prim$mage - prim$age / 12  # idade da mãe quando a criança nasceu
+
+boxplot(idade_parto ~ lit, data = prim,
+        xlab = "Mãe alfabetizada", ylab = "Idade da mãe ao nascimento (anos)")
+
+# (h) Alfabetização × filhos que morreram
+
+tapply(maes$died, maes$lit, summary)                # resumo de died por grupo
+tapply(maes$died > 0, maes$lit, mean)               # proporção com pelo menos 1 filho morto
+
+tab <- table(maes$lit, maes$died)                   # tabela de contingência
+prop.table(tab, margin = 1)                         # proporções por linha (cada grupo soma 1)
+
+barplot(prop.table(tab, 1), beside = TRUE,          # barras lado a lado
+        legend.text = TRUE, args.legend = list(title = "Alfabetizada"),
+        xlab = "Nº de filhos que morreram", ylab = "Proporção")
+
+# (i) Mães com menos de 40 anos e sem filhos que morreram
+
+summary(subset(maes, mage < 40 & died == 0))   # subset filtra linhas pela condição
+
+# (j) Mães mais velhas têm mais filhos que morreram?
+cor(maes$mage, maes$died, method = "spearman")       # correlação por postos
+
+plot(jitter(maes$mage), jitter(maes$died),           # jitter afasta pontos sobrepostos
+     xlab = "Idade da mãe", ylab = "Nº de filhos que morreram")
+lines(lowess(maes$mage, maes$died), col = "red", lwd = 2)   # curva de tendência
+
+# (k) Meninos são mais altos e pesados?
+plot(dados$ht, dados$wt,
+     col = c("blue", "red")[dados$sex],     # o fator indexa o vetor de cores: boy = azul, girl = vermelho
+     xlab = "Altura (cm)", ylab = "Peso (kg)")
+legend("topleft", legend = levels(dados$sex), col = c("blue", "red"), pch = 1)
+
+aggregate(cbind(ht, wt) ~ sex, data = dados, FUN = mean)     # médias de altura e peso por sexo
+aggregate(cbind(ht, wt) ~ sex, data = dados, FUN = median)
+
+dados[dados$mage == min(dados$mage), c("id", "mage", "age")]   # mãe mais nova
+dados[dados$mage == max(dados$mage), c("id", "mage", "age")]   # mãe mais velha
+
+dados$mage > 30    # TRUE quando mage > 30, FALSE caso contrário
+
+dados$mage.cl <- cut(dados$mage, breaks = c(-Inf, 20, 35, Inf),
+                     right = FALSE,                      # [a, b): 20 entra em "20-34"
+                     labels = c("<20", "20-34", ">34"))
+
+maes2 <- unique(dados[, c("hh", "mage.cl", "died")])     # uma linha por mãe
+tapply(maes2$died == 0, maes2$mage.cl, mean)             # proporção sem mortes em cada classe
+
+dados$age.year <- floor(dados$age / 12)    # meses -> anos completos, sem decimais
+
+boxplot(wt ~ sex + age.year, data = dados,           # um boxplot por combinação sexo × idade
+        col = c("blue", "red"),                      # as cores alternam: boy, girl, boy, girl...
+        las = 2, xlab = "", ylab = "Peso (kg)")      # las = 2 roda os rótulos do eixo x
+legend("topleft", legend = c("boy", "girl"), fill = c("blue", "red"))
+
+write.csv(subset(dados, sex == "girl"), "nepali_girls.csv",
+          row.names = FALSE)    # sem a coluna extra de nomes das linhas
+
+
+#### worksheet 2
+
+# a
+
+library(tidyverse)   # carrega ggplot2, dplyr, tibble, forcats etc.
+library(ggthemes)    # temas extras
+
+iris_all <- bind_rows(
+  iris %>% mutate(Species = "1"),                 # cópia com tudo rotulado "ALL"
+  iris %>% mutate(Species = as.character(Species))  # dados originais (como texto, para poder empilhar)
+)
+
+ggplot(iris_all, aes(x = Petal.Length, y = Petal.Width, colour = Species)) +
+  geom_point(size = 1) +                     # um ponto por flor
+  geom_smooth(method = "loess") +            # curva suavizada + faixa de confiança cinza
+  facet_wrap(~ Species, scales = "free") +   # um painel por grupo, cada um com eixos próprios
+  labs(x = "Petal Length", y = "Petal Width") +
+  theme_bw() 
+
+
+# 1(b) Tufte style: mtcars
+mtcars %>%
+  rownames_to_column("car") %>%                  # nomes dos carros são rownames; vira coluna
+  ggplot(aes(x = mpg, y = fct_reorder(car, mpg))) +  # ordena os carros pelo mpg
+  geom_point(size = 1) +
+  geom_text(aes(label = car), hjust = 0, nudge_x = 0.3, size = 2.5) +  # nome à direita do ponto
+  scale_x_continuous(limits = c(10, 40)) +       # eixo x de 10 a 40
+  labs(x = "Miles per gallon fuel consumption", y = NULL) +
+  theme_bw()
+
+
+# 1(c) Bubble plot: mtcars
+
+mtcars %>%
+  mutate(am = factor(am, labels = c("Manual", "Automatic"))) %>%  # 0/1 vira categoria com rótulo
+  ggplot(aes(x = mpg, y = qsec, size = disp, colour = am)) +
+  geom_point() +
+  labs(x = "Miles per gallon", y = "1/4 mile time",
+       size = "Displacement", colour = "Gear") +   # títulos dos eixos e das legendas
+  theme_bw()
+
+# 1(d) Série temporal: economics
+head(economics)
+ggplot(economics, aes(x = date, y = uempmed)) +
+  geom_line() +                                   
+  expand_limits(y = 0) + # força o eixo y a começar em 0
+  labs(title = "Median duration of unemployment (weeks)",
+       x = NULL,
+       y = "Median duration of unemployment [weeks]") 
+
+# 2. diamonds: preço × quilate × cor
+head(diamonds)
+ggplot(diamonds, aes(x = carat, y = price, colour = color)) +
+  geom_point()
+#  geom_point(alpha = 0.05, size = 0.5) +      
+geom_smooth(method = "lm", se = FALSE) +     # uma reta de regressão por cor
+  scale_x_log10() + scale_y_log10() +
+  labs(x = "Carat (log)", y = "Price (log)", colour = "Color") 
+
+
+# 3. hflights: atrasos por hora e dia da semana
+library(hflights)
+
+atrasos <- hflights %>%
+  filter(!is.na(ArrDelay), !is.na(ArrTime)) %>%   # remove voos cancelados/desviados
+  mutate(
+    ArrDelay = pmax(ArrDelay, 0),                 # atrasos negativos (adiantados) viram 0
+    hora = (ArrTime %/% 100) %% 24,               # ArrTime é hhmm; divisão inteira dá a hora (24 vira 0)
+    dia  = factor(DayOfWeek, levels = 1:7,
+                  labels = c("Seg","Ter","Qua","Qui","Sex","Sáb","Dom"))  # 1 = segunda
+  ) %>%
+  group_by(dia, hora) %>%                         # para cada combinação dia × hora...
+  summarise(atraso_medio = mean(ArrDelay),        # ...atraso médio
+            prop_atraso  = mean(ArrDelay > 0),    # ...proporção de voos atrasados
+            .groups = "drop")
+
+ggplot(atrasos, aes(x = hora, y = dia, fill = atraso_medio)) +
+  geom_tile() +                                   # heatmap: um quadrado por dia × hora
+  scale_fill_viridis_c() +                        # escala de cor contínua
+  labs(x = "Hora de chegada", y = NULL, fill = "Atraso médio (min)") +
+  theme_minimal()
+
+
+
+###### 15/10
+
+N = 10^4
+p = 0.2
+
+lista_medias <- c()
+lista_vars <- c()
+for (i in 1:N){
+  amostra <- rbinom(n,1,p)
+  est <- sum(amostra)/length(amostra)
+  lista_medias <- c(lista_medias,est)
+  
+  var <- (amostra-est)^2/length(amostra)
+  lista_vars <- c(lista_vars,var)
+}
+
+hist(v)
+mean(v)
+sd(v)
+
+
+# como eu convenco se e consistente? aumentar o tamanho amostral e ver o quanto altera na variancia
 
