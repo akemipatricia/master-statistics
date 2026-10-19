@@ -118,7 +118,7 @@ sd_sample = sqrt((sum((x3-mean_sample)^2))/(n-1))
 se = sd_sample/sqrt(n)
 
 # estatistica t
-tc = qt(1-alpha/2,n-1) # 2.06865
+tc = qt(1-alpha,n-1) # 2.06865
 t_ = (mean_sample-mu)/se
 
 # ic
