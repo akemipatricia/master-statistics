@@ -1,12 +1,44 @@
 # exercicios ficha 03
 
-# 01
-power.t.test(n=NULL,d=.5,power=.8,sig.level=0.05)$n
+#----------------------------------------------
+# exercise 1
+#----------------------------------------------
+power.t.test(n=NULL,d=.5,power=.8,sig.level=0.05)
 
-# 02
-power.t.test(n=NULL,d=.3,power=.8,sig.level=0.05,alternative = 'two.sided')$n
+#----------------------------------------------
+# exercise 2
+#----------------------------------------------
+pwr.r.test(r=0.3,sig.level = 0.05,power=0.80,alternative = 'two.sided')
 
-# 03
+#----------------------------------------------
+# exercise 3
+#----------------------------------------------
+# 1
+pwr.t.test(d=0.4,n=20,sig.level=0.05,power=NULL)$power
+# 2
+pwr.t.test(d=0.4,n=NULL,sig.level=0.05,power=0.8)$n # per group
+
+#----------------------------------------------
+# exercise 4 - chisq test
+#----------------------------------------------
+
+pwr.chisq.test(w=0.2,sig.level = 0.05,power=0.8,N=NULL,df=2)
+
+#----------------------------------------------
+# exercise 5 - paired sample t test
+#----------------------------------------------
+
+pwr.t.test(d=0.35,sig.level = 0.05,power=0.8,alternative = 'two.sided',type='paired')
+
+#----------------------------------------------
+# exercise 6
+#----------------------------------------------
+
+#----------------------------------------------
+# exercise 7
+#----------------------------------------------
+
+
 power.t.test(n=20,d=.4,power=NULL,sig.level=0.05)$power
 power.t.test(n=NULL,d=.4,power=0.8,sig.level=0.05)$n
 
