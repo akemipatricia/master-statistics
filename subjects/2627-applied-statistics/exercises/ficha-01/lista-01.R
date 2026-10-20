@@ -53,9 +53,7 @@ plot_dist_t <- function(n = 4, mean_sample = 9, dp_sample = 0.6, alpha = 0.05) {
 # t_ : t calculado
 # tc : t critico dado alpha
 
-#----------------------------------------------
-# exercise 1
-#----------------------------------------------
+#### ex 01 ----
 
 mean_sample = 9
 n = 4
@@ -63,14 +61,14 @@ sd_sample = 0.6
 alpha = 0.05
 mean_sample+c(-1,1)*qt(1-alpha/2,n-1)*sd_sample/sqrt(n)
 
+
+
 # as condições que justificam usar o intervalo baseado na distribuição student são:   
 # 1. amostra ser aleatória iid
 # 2. normalidade da população
 # 3. sigma desconhecido
 
-#----------------------------------------------
-# exercise 2
-#----------------------------------------------
+#### ex 02 ----
 
 n = 30
 mu = 12
@@ -85,6 +83,7 @@ qqnorm(x2)
 qqline(x2)
 
 mean_sample = mean(x2)
+sd(x2)
 sd_sample = sqrt(sum((x2-mean_sample)^2)/(n-1))
 se = sd_sample/sqrt(n)
 
@@ -122,10 +121,10 @@ tc = qt(1-alpha,n-1) # 2.06865
 t_ = (mean_sample-mu)/se
 
 # ic
-mean_sample + c(-1,1)*tc*se
+mean_sample + c(-1,Inf)*tc*se
 
 # verificacao
-t.test(x3,mu=250)
+t.test(x3,mu=250,alternative = 'greater')
 
 # a que nivel se sign rejeitaria a hipotese
 t.test(x3,mu=250)$p.value
@@ -662,27 +661,4 @@ ggplot(atrasos, aes(x = hora, y = dia, fill = atraso_medio)) +
   theme_minimal()
 
 
-
-###### 15/10
-
-N = 10^4
-p = 0.2
-
-lista_medias <- c()
-lista_vars <- c()
-for (i in 1:N){
-  amostra <- rbinom(n,1,p)
-  est <- sum(amostra)/length(amostra)
-  lista_medias <- c(lista_medias,est)
-  
-  var <- (amostra-est)^2/length(amostra)
-  lista_vars <- c(lista_vars,var)
-}
-
-hist(v)
-mean(v)
-sd(v)
-
-
-# como eu convenco se e consistente? aumentar o tamanho amostral e ver o quanto altera na variancia
 

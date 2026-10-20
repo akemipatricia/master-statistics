@@ -10,6 +10,7 @@ x0 = 85
 
 # i. Desenhe o diagrama de dispersão dos dados.
 ggplot(df,aes(x=preco,y=vendas))+geom_point(size=4)+theme_bw(base_size=16)
+plot(df$preco,df$vendas)
 
 # ii. Determine os coeficientes da recta de regressão usando o MMQ.
 
@@ -264,7 +265,7 @@ tc=qt(1-0.05/2,n-2)
 beta+c(-1,1)*tc*se
 confint(mod)
 
-## exercicio 07
+#### exercicio 07 ----
 
 url = 'https://hastie.su.domains/ElemStatLearn/datasets/galaxy.data'
 galaxy = read.csv(url)

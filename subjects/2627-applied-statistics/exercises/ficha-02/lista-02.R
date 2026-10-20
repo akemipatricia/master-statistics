@@ -10,7 +10,7 @@ x0 = 5
 n = length(x1)-sum(x1==x0)
 n_plus = sum(x1>x0)
 
-binom.test(n_plus,n,0.5)
+binom.test(n_plus,n,0.5,alternative='two.sided')
 
 #----------------------------------------------
 # exercise 2
@@ -21,14 +21,14 @@ antes = c(1.69, 2.77, 1.00, 1.66, 3.00, 0.85, 1.42, 2.82, 2.58, 1.84, 1.89, 1.91
 depois = c(1.69, 2.22, 3.07, 3.35, 3.00, 2.74, 3.61, 5.14, 2.44, 4.17, 2.42, 2.94, 3.04, 4.62, 4.42)
 n = length(antes)-sum(antes==depois)
 n_plus = sum(depois>antes)
-binom.test(n_plus,n,0.5)$p.value/2
+binom.test(n_plus,n,0.5,alternative = 'greater')
 
 #----------------------------------------------
 # exercise 3
 #----------------------------------------------
 
 x3 = c(4.91, 4.10, 6.74, 7.27, 7.42, 7.50, 6.56, 4.64, 5.98, 3.14, 3.23, 5.80, 6.17, 5.39, 5.77)
-wilcox.test(x3,mu = 5.05)
+wilcox.test(x3,mu = 5.05,alternative = 'two.sided')
 
 #----------------------------------------------
 # exercise 4
@@ -63,7 +63,9 @@ x0 = 60
 n = length(x7)-sum(x7==x0)
 n_plus = sum(x7>x0)
 
-binom.test(n_plus,n,0.5)
+binom.test(n_plus,n,0.5,alternative='two.sided')
+
+wilcox.test(x7,mu = 60,alternative = 'two.sided')
 
 #----------------------------------------------
 # exercise 8
@@ -85,4 +87,5 @@ wilcox.test(x8,x0,alternative='less')
 reg_a = c(0.237, 0.235, 0.423, 0.398, 0.241, 0.237, 0.344, 0.449, 0.741, 0.405)
 reg_b = c(0.341, 0.482, 0.464, 0.256, 0.908, 0.286, 0.518, 0.326)
 
-wilcox.test(reg_a,reg_b)
+wilcox.test(reg_a,reg_b,alternative='two.sided')
+

@@ -1,9 +1,11 @@
 # exercicios ficha 03
 
+library(pwr)
 #----------------------------------------------
 # exercise 1
 #----------------------------------------------
 power.t.test(n=NULL,d=.5,power=.8,sig.level=0.05)
+pwr.t.test(n=NULL,d=.5,power=.8,sig.level=0.05,type='two.sample')
 
 #----------------------------------------------
 # exercise 2
@@ -14,9 +16,10 @@ pwr.r.test(r=0.3,sig.level = 0.05,power=0.80,alternative = 'two.sided')
 # exercise 3
 #----------------------------------------------
 # 1
-pwr.t.test(d=0.4,n=20,sig.level=0.05,power=NULL)$power
+pwr.t.test(d=0.4,n=20,sig.level=0.05,power=NULL)
+
 # 2
-pwr.t.test(d=0.4,n=NULL,sig.level=0.05,power=0.8)$n # per group
+pwr.t.test(d=0.4,n=NULL,sig.level=0.05,power=0.8)
 
 #----------------------------------------------
 # exercise 4 - chisq test
@@ -34,23 +37,16 @@ pwr.t.test(d=0.35,sig.level = 0.05,power=0.8,alternative = 'two.sided',type='pai
 # exercise 6
 #----------------------------------------------
 
+1-power.t.test(n=20,d=.6,power=NULL,sig.level=0.05)$power
+1-power.t.test(n=20,d=.6,power=NULL,sig.level=0.1)$power
+
 #----------------------------------------------
 # exercise 7
 #----------------------------------------------
 
 
-power.t.test(n=20,d=.4,power=NULL,sig.level=0.05)$power
-power.t.test(n=NULL,d=.4,power=0.8,sig.level=0.05)$n
 
-# 04
-power.t.test(n=20,d=.4,power=NULL,sig.level=0.05)$power
 
-# 05
-power.t.test(n=NULL,d=.35,power=0.8,sig.level=0.05)$n
-
-# 06
-1-power.t.test(n=20,d=.6,power=NULL,sig.level=0.05)$power
-1-power.t.test(n=20,d=.6,power=NULL,sig.level=0.1)$power
 
 # 07
 cost_per_person = 200
@@ -79,8 +75,3 @@ pwr.r.test(n=50,r=.0025,power=NULL,sig.level=0.05)$power # per group!
 propo
 pwr.r.test(n=NULL,r=.0025,power=0.8,sig.level=0.05)$power # per group!
 
-install.packages('pwr')
-library(pwr)
-
-4.5837
-bss/(k-1)

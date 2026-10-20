@@ -7,13 +7,21 @@ a2 = c(1.38,1.41,1.44,1.37,1.40)
 a3 = c(1.49,1.54,1.48,1.51,1.48)
 a4 = c(1.46,1.49,1.44,1.52,1.49)
 
-df = data.frame(peso=c(a1,a2,a3,a4),grupo=gl(4,5,20))   
+df = data.frame(peso=c(a1,a2,a3,a4),grupo=factor(gl(4,5,20)))   
 attach(df)
-summary(aov(lm(peso~grupo)))
 
-boxplot(peso~grupo)
-pairwise.t.test(peso,grupo)
+mod = aov(df$peso~df$grupo)
+summary(mod)
 
+boxplot(df$peso~df$grupo)
+pairwise.t.test(df$peso,df$grupo)
+
+# pressupostos de normalidade dos residuos
+qqnorm(mod$residuals)
+qqline(mod$residuals)
+shapiro.test(mod$residuals)
+leveneTest(df$peso~df$grupo) 
+plot(fitted(mod),residuals(mod))
 
 # ex 02
 
@@ -25,9 +33,37 @@ c = c(2664, 2078, 3584, 1540, 1840)
 efeitos = c(sem_trat,a,b,c)
 trat = c(rep('sem trat',5),rep('A',4),rep('B',4),rep('C',5))
 
-summary(aov(lm(efeitos~trat)))
+mod = aov(efeitos~trat)
+summary(mod)
 boxplot(efeitos~trat)
 pairwise.t.test(efeitos,trat)
+
+# normalidade dos residuos
+qqnorm(mod$residuals)
+qqline(mod$residuals)
+shapiro.test(mod$residuals)
+# homoscedasticidade
+plot(mod$fitted.values,mod$residuals)
+
+# trasnformacao log
+mod = aov(log(efeitos)~trat)
+summary(mod)
+# normalidade dos residuos
+qqnorm(mod$residuals)
+qqline(mod$residuals)
+shapiro.test(mod$residuals)
+# homoscedasticidade
+plot(mod$fitted.values,mod$residuals)
+
+# trasnformacao 1/y
+mod = aov(1/efeitos~trat)
+summary(mod)
+# normalidade dos residuos
+qqnorm(mod$residuals)
+qqline(mod$residuals)
+shapiro.test(mod$residuals)
+# homoscedasticidade
+plot(mod$fitted.values,mod$residuals)
 
 
 # ex 03
@@ -210,7 +246,7 @@ shapiro.test(mod2$residuals)
 
 # check homoscedasticity
 plot(fitted(mod2),residuals(mod2))
-interaction.plot(consumo, grupo_etario, maturidade_emocional,col=rainbow(3))
+interaction.plot(ocupacao, grupo_etario, m,col=rainbow(3))
 
 
 # Efeito do consumo. Todas as linhas descem de Nunca para Ocasional. Quem nunca consome tem maior maturidade emocional (média 28,3, contra 18,3 e 16,7). É o efeito mais forte (F = 38,9).
