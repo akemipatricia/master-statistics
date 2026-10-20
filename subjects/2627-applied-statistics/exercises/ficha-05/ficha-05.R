@@ -1,6 +1,6 @@
 ############### FICHA 05 ----
 
-## execise 01
+#### ex 01 ----
 precox <- c(100, 90, 80, 70, 70, 70, 70, 65, 60, 60, 55, 60)
 vendasy <- c(55, 70, 90, 100, 90, 105, 80, 110, 125, 115, 130, 130)
 df = data.frame(preco=precox,vendas=vendasy)
@@ -65,7 +65,7 @@ r2 = ssr/ssy
 cor.test(df$preco,df$vendas)
 
 
-#### 02 ----
+#### ex 02 ----
 
 altura_pai = c(63, 64, 70, 72, 65, 67, 68, 66)
 altura_filho = c(65, 67, 69, 70, 64, 68, 71, 63)
@@ -91,7 +91,7 @@ beta = mod$coefficients[1]
 sse = anova(mod)$`Sum Sq`[2]
 sigma2 = sse/(n-2)
 
-#### 03 ----
+#### ex 03 ----
 
 temperatura = rep(c(50, 60, 70, 80, 90, 100),2)
 calor = c(1.60, 1.63, 1.67, 1.70, 1.71, 1.71, 1.64, 1.65, 1.67, 1.72, 1.72, 1.74)
@@ -139,7 +139,7 @@ sse = ssyy-ssr
 summary(mod)$r.squared
 cor(df$temperatura, df$calor)^2
 
-#### 04 ----
+#### ex 04 ----
 
 peso = c(64.0, 75.3, 73.0, 82.1, 76.2, 95.7, 59.4, 93.4,
          82.1, 78.9, 76.7, 82.1, 83.9, 73.0, 64.4, 77.6)
@@ -182,7 +182,7 @@ confint(mod)
 predict(mod,data.frame(peso=95),int='c')
 predict(mod,data.frame(peso=95),int='p')
 
-# exercicio 5 
+#### ex 05 ----
 
 idade = c(20, 43, 63, 26, 53, 31, 58, 46, 58, 70,
           46, 53, 70, 20, 63, 43, 26, 19, 31, 23)
@@ -226,8 +226,7 @@ confint(mod)
 predict(mod,data.frame(idade=25),int='c')
 predict(mod,data.frame(idade=25),int='p')
 
-
-# exercicio 6
+#### ex 06 ----
 
 tempo = seq(24, 60, by = 4)
 temperatura = c(38.8, 39.5, 40.3, 40.7, 41.0, 41.1, 41.4, 41.6, 41.8, 41.9)
@@ -265,7 +264,7 @@ tc=qt(1-0.05/2,n-2)
 beta+c(-1,1)*tc*se
 confint(mod)
 
-## exercicio 06
+## exercicio 07
 
 url = 'https://hastie.su.domains/ElemStatLearn/datasets/galaxy.data'
 galaxy = read.csv(url)
