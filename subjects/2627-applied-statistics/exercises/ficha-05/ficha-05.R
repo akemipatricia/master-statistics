@@ -56,8 +56,8 @@ h = 1/n+(x0-x_avg)^2/ssx
 y_hat + c(-1,1)*tc*sqrt(sigma2*h)
 y_hat + c(-1,1)*tc*sqrt(sigma2*(1+h))
 
-predict(mod,data.frame(precox=x0),interval='confidence')
-predict(mod,data.frame(precox=x0),interval='prediction')
+predict(mod,data.frame(precox=85),interval='confidence')
+predict(mod,data.frame(precox=85),interval='prediction')
 
 
 # vii. Calcule o coeficiente de determinação.
@@ -76,16 +76,22 @@ g = length(colnames(df))
 
 # i diagrama de dispersao
 ggplot(df,aes(x=altura_pai,y=altura_filho))+geom_point()+theme_bw()
+plot(df$altura_filho,df$altura_filho)
 # ii coeficientes
 mod = lm(altura_filho~altura_pai,data=df)
+summary(mod)
 mod$coefficients
+
 # iii coeficiente de corr de pearson e pvalue
 cor.test(df$altura_pai,df$altura_filho)$estimate
 cor.test(df$altura_pai,df$altura_filho)$p.value
 # iv tabela anova e hipotese nula de que beta=0
 anova(mod)
 qf(0.95,g-1,n-2) # teste f é unilateral
-predict(mod,data.frame(altura_pai=71))
+confint(mod)
+
+predict(mod,data.frame(altura_pai=71),level = 0.95, int = 'confidence')
+predict(mod,data.frame(altura_pai=71),level = 0.95, int = 'prediction')
 
 # v ic para beta
 beta = mod$coefficients[1]
@@ -191,12 +197,29 @@ pressao = c(120, 128, 141, 126, 134, 128, 136, 132, 140, 144,
             128, 136, 146, 124, 143, 130, 124, 121, 126, 123)
 df = data.frame(idade = idade, pressao = pressao)
 # x: idade | y: pressao
-
+n = length(df$idade)
 # i scatter plot
 ggplot(df,aes(x=idade,y=pressao))+geom_point()
-mod = lm(pressao~idade,data=df)
 
-# ii determine coef reta de reg
+# model
+mod = lm(pressao~idade,data=df)
+anova(mod)
+summary(mod)
+
+# coeficientes
+mod$coefficients
+
+# coef corr pearson
+cor.test(df$pressao,df$idade)
+
+# anova - teste f testando o beta=0
+summary(mod)
+qf(1-0.05,1,n-2)
+
+# ic para beta
+
+
+# ii dmod# ii determine coef reta de reg
 x_avg = mean(df$idade) # 43.1
 y_avg = mean(df$pressao) # 131.5
 ssxx = sum((df$idade-x_avg)^2) # 5825.8
@@ -212,6 +235,9 @@ cor.test(df$idade,df$pressao,method = 'pearson')$p.value # 4.238718e-12
 
 # iv tabela anova e testar beta=0
 anova(mod)
+aov(mod)
+summary(mod)
+
 mod$coefficients # 112.3166604   0.4450891 
 qf(0.95,1,n-2)
 
@@ -224,8 +250,8 @@ beta+c(-1,1)*tc*se
 confint(mod)
 
 # vi
-predict(mod,data.frame(idade=25),int='c')
-predict(mod,data.frame(idade=25),int='p')
+predict(mod,data.frame(idade=25),int='confidence',level=0.95)
+predict(mod,data.frame(idade=25),int='prediction',level=0.95)
 
 #### ex 06 ----
 
@@ -264,6 +290,14 @@ se = sqrt(sigma2/ssxx)
 tc=qt(1-0.05/2,n-2)
 beta+c(-1,1)*tc*se
 confint(mod)
+
+# normalidade dos residuos
+qqnorm(mod$residuals)
+qqline(mod$residuals)
+shapiro.test(mod$residuals)
+
+plot(mod$fitted.values,mod$residuals)
+
 
 #### exercicio 07 ----
 
